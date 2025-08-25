@@ -1,11 +1,17 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Heart, Calendar, CheckCircle, XCircle, User, Phone, MapPin } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
+import { useMedicalStore } from "@/stores/medicalStore";
+import { toast } from "sonner";
 
 const DonorPortal = () => {
   const user = useAuthStore((state) => state.user);
+  const { donationOpportunities, registerForDonation } = useMedicalStore();
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   
   // Mock data for donor
   const donorData = {
@@ -103,10 +109,51 @@ const DonorPortal = () => {
                     <span className="text-2xl font-bold text-primary">Eligible to Donate</span>
                   </div>
                   <p className="text-muted-foreground mb-4">You can donate blood and organs now!</p>
-                  <Button size="lg" className="pulse-healing">
-                    <Heart className="w-5 h-5 mr-2" />
-                    Schedule Donation
-                  </Button>
+                  <Dialog open={isScheduleOpen} onOpenChange={setIsScheduleOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="lg" className="pulse-healing">
+                        <Heart className="w-5 h-5 mr-2" />
+                        Schedule Donation
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Schedule Donation</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <p className="text-muted-foreground">Register for nearby donation opportunities:</p>
+                        {donationOpportunities.map((opportunity) => (
+                          <div key={opportunity.id} className={`p-4 rounded-lg border-2 ${
+                            opportunity.urgent ? 'border-emergency bg-emergency/5' : 'border-border bg-accent/20'
+                          }`}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <h4 className={`font-semibold ${opportunity.urgent ? 'text-emergency' : ''}`}>
+                                  {opportunity.name}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">{opportunity.date} • {opportunity.time}</p>
+                                <p className="text-sm text-muted-foreground">📍 {opportunity.location} • {opportunity.distance} away</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {opportunity.registeredDonors.length} donors registered
+                                </p>
+                              </div>
+                              <Button 
+                                variant={opportunity.urgent ? "destructive" : "outline"}
+                                onClick={() => {
+                                  registerForDonation(opportunity.id, user?.id || '');
+                                  toast.success(`Registered for ${opportunity.name}`);
+                                }}
+                                disabled={opportunity.registeredDonors.includes(user?.id || '')}
+                              >
+                                {opportunity.registeredDonors.includes(user?.id || '') ? 'Registered' : 
+                                 opportunity.urgent ? 'Register Now' : 'Register'}
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               ) : (
                 <div>
@@ -177,23 +224,8 @@ const DonorPortal = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { 
-                  name: 'Blood Drive at City Mall', 
-                  date: '2024-02-20', 
-                  time: '10:00 AM - 4:00 PM', 
-                  distance: '2.5 km',
-                  urgent: false 
-                },
-                { 
-                  name: 'Emergency: B+ Blood Needed', 
-                  date: '2024-02-16', 
-                  time: 'ASAP', 
-                  distance: '1.2 km',
-                  urgent: true 
-                }
-              ].map((opportunity, index) => (
-                <div key={index} className={`p-4 rounded-lg border-2 ${
+              {donationOpportunities.map((opportunity) => (
+                <div key={opportunity.id} className={`p-4 rounded-lg border-2 ${
                   opportunity.urgent ? 'border-emergency bg-emergency/5' : 'border-border bg-accent/20'
                 }`}>
                   <div className="flex items-center justify-between">
@@ -202,10 +234,21 @@ const DonorPortal = () => {
                         {opportunity.name}
                       </h4>
                       <p className="text-sm text-muted-foreground">{opportunity.date} • {opportunity.time}</p>
-                      <p className="text-sm text-muted-foreground">📍 {opportunity.distance} away</p>
+                      <p className="text-sm text-muted-foreground">📍 {opportunity.location} • {opportunity.distance} away</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {opportunity.registeredDonors.length} donors registered
+                      </p>
                     </div>
-                    <Button variant={opportunity.urgent ? "destructive" : "outline"}>
-                      {opportunity.urgent ? 'Respond' : 'Register'}
+                    <Button 
+                      variant={opportunity.urgent ? "destructive" : "outline"}
+                      onClick={() => {
+                        registerForDonation(opportunity.id, user?.id || '');
+                        toast.success(`Registered for ${opportunity.name}`);
+                      }}
+                      disabled={opportunity.registeredDonors.includes(user?.id || '')}
+                    >
+                      {opportunity.registeredDonors.includes(user?.id || '') ? 'Registered' : 
+                       opportunity.urgent ? 'Respond' : 'Register'}
                     </Button>
                   </div>
                 </div>

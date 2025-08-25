@@ -7,13 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, TrendingUp, Users, Activity } from "lucide-react";
+import { Plus, Edit, Trash2, TrendingUp, Users, Activity, Heart } from "lucide-react";
 import { useMedicalStore } from "@/stores/medicalStore";
 import { toast } from "sonner";
 
 const HospitalDashboard = () => {
-  const { bloodStock, requests, addBloodStock, updateBloodStock, deleteBloodStock, updateRequestStatus } = useMedicalStore();
+  const { bloodStock, organStock, requests, addBloodStock, updateBloodStock, deleteBloodStock, addOrganStock, updateOrganStock, deleteOrganStock, updateRequestStatus } = useMedicalStore();
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
+  const [isAddOrganOpen, setIsAddOrganOpen] = useState(false);
   const [editingStock, setEditingStock] = useState(null);
   const [stockForm, setStockForm] = useState({
     type: 'Blood',
@@ -21,6 +22,15 @@ const HospitalDashboard = () => {
     quantity: '',
     expiryDate: ''
   });
+  const [organForm, setOrganForm] = useState({
+    type: '',
+    urgency: 'Low',
+    available: true
+  });
+
+  const organTypes = [
+    'Heart', 'Liver', 'Kidney', 'Lung', 'Pancreas', 'Cornea', 'Bone Marrow', 'Skin', 'Bone'
+  ];
 
   const handleAddStock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +44,19 @@ const HospitalDashboard = () => {
     setStockForm({ type: 'Blood', bloodGroup: 'A+', quantity: '', expiryDate: '' });
     setIsAddStockOpen(false);
     toast.success("Stock added successfully!");
+  };
+
+  const handleAddOrgan = (e: React.FormEvent) => {
+    e.preventDefault();
+    addOrganStock({
+      type: organForm.type,
+      available: organForm.available,
+      urgency: organForm.urgency as any,
+      hospitalId: '1'
+    });
+    setOrganForm({ type: '', urgency: 'Low', available: true });
+    setIsAddOrganOpen(false);
+    toast.success("Organ added successfully!");
   };
 
   const handleStatusUpdate = (requestId: string, newStatus: any) => {
@@ -117,13 +140,13 @@ const HospitalDashboard = () => {
           </Card>
         </div>
 
-        {/* Stock Management */}
+        {/* Blood & Plasma Stock Management */}
         <Card className="medical-card border-0">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
                 <Activity className="w-5 h-5" />
-                <span>Stock Management</span>
+                <span>Blood & Plasma Stock</span>
               </CardTitle>
               <Dialog open={isAddStockOpen} onOpenChange={setIsAddStockOpen}>
                 <DialogTrigger asChild>
@@ -220,6 +243,114 @@ const HospitalDashboard = () => {
                           variant="ghost" 
                           size="sm" 
                           onClick={() => deleteBloodStock(stock.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Organ Stock Management */}
+        <Card className="medical-card border-0">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <Heart className="w-5 h-5" />
+                <span>Organ Stock</span>
+              </CardTitle>
+              <Dialog open={isAddOrganOpen} onOpenChange={setIsAddOrganOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Organ
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Organ</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleAddOrgan} className="space-y-4">
+                    <div>
+                      <Label htmlFor="organType">Organ Type</Label>
+                      <Select value={organForm.type} onValueChange={(value) => setOrganForm({...organForm, type: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select organ type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {organTypes.map(organ => (
+                            <SelectItem key={organ} value={organ}>{organ}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="urgency">Urgency</Label>
+                        <Select value={organForm.urgency} onValueChange={(value) => setOrganForm({...organForm, urgency: value})}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Low">Low</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="High">High</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center space-x-2 mt-6">
+                        <input 
+                          type="checkbox" 
+                          checked={organForm.available}
+                          onChange={(e) => setOrganForm({...organForm, available: e.target.checked})}
+                          className="w-4 h-4"
+                        />
+                        <Label>Available</Label>
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full">Add Organ</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Organ Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Urgency</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {organStock.map((organ) => (
+                  <TableRow key={organ.id}>
+                    <TableCell className="font-medium">{organ.type}</TableCell>
+                    <TableCell>
+                      <Badge variant={organ.available ? "default" : "secondary"}>
+                        {organ.available ? "Available" : "Not Available"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`font-medium ${getUrgencyColor(organ.urgency)}`}>
+                        {organ.urgency}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button variant="ghost" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => deleteOrganStock(organ.id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

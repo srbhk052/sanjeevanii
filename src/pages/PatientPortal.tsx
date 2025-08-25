@@ -21,11 +21,16 @@ const PatientPortal = () => {
     patientName: '',
     requirement: 'Blood',
     bloodGroup: 'A+',
+    organType: '',
     quantity: '',
     urgency: 'Medium',
     location: '',
     contactNumber: ''
   });
+
+  const organTypes = [
+    'Heart', 'Liver', 'Kidney', 'Lung', 'Pancreas', 'Cornea', 'Bone Marrow', 'Skin', 'Bone'
+  ];
 
   const handleSubmitRequest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +44,7 @@ const PatientPortal = () => {
       patientName: '',
       requirement: 'Blood',
       bloodGroup: 'A+',
+      organType: '',
       quantity: '',
       urgency: 'Medium',
       location: '',
@@ -112,19 +118,35 @@ const PatientPortal = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="bloodGroup">Blood Group</Label>
-                    <Select value={requestForm.bloodGroup} onValueChange={(value) => setRequestForm({...requestForm, bloodGroup: value})}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(group => (
-                          <SelectItem key={group} value={group}>{group}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {requestForm.requirement === 'Organ' ? (
+                    <div>
+                      <Label htmlFor="organType">Organ Type</Label>
+                      <Select value={requestForm.organType} onValueChange={(value) => setRequestForm({...requestForm, organType: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select organ" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {organTypes.map(organ => (
+                            <SelectItem key={organ} value={organ}>{organ}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label htmlFor="bloodGroup">Blood Group</Label>
+                      <Select value={requestForm.bloodGroup} onValueChange={(value) => setRequestForm({...requestForm, bloodGroup: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(group => (
+                            <SelectItem key={group} value={group}>{group}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
