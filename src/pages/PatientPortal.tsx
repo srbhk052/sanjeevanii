@@ -48,35 +48,7 @@ const PatientPortal = () => {
     toast.success("Request submitted successfully!");
   };
 
-  const mockHospitals = [
-    {
-      id: 1,
-      name: 'City General Hospital',
-      city: 'Mumbai',
-      distance: '2.1 km',
-      availableBlood: ['A+', 'B+', 'O+', 'AB+'],
-      phone: '+91 22 2345 6789',
-      rating: 4.8
-    },
-    {
-      id: 2,
-      name: 'Metro Medical Center',
-      city: 'Mumbai',
-      distance: '3.5 km',
-      availableBlood: ['A+', 'A-', 'B+', 'O+'],
-      phone: '+91 22 2345 6790',
-      rating: 4.6
-    },
-    {
-      id: 3,
-      name: 'Apollo Hospital',
-      city: 'Delhi',
-      distance: '1.8 km',
-      availableBlood: ['B+', 'O+', 'AB+', 'AB-'],
-      phone: '+91 11 2345 6789',
-      rating: 4.9
-    }
-  ];
+  const mockHospitals: any[] = [];
 
   const filteredHospitals = searchCity 
     ? mockHospitals.filter(h => h.city.toLowerCase().includes(searchCity.toLowerCase()))
@@ -227,43 +199,50 @@ const PatientPortal = () => {
             </div>
 
             <div className="space-y-4">
-              {filteredHospitals.map((hospital) => (
-                <Card key={hospital.id} className="border border-border">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Hospital className="w-5 h-5 text-primary" />
-                          <h3 className="font-semibold">{hospital.name}</h3>
-                          <Badge variant="outline">⭐ {hospital.rating}</Badge>
-                        </div>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
-                          <div className="flex items-center space-x-1">
-                            <MapPin className="w-3 h-3" />
-                            <span>{hospital.city} • {hospital.distance}</span>
+              {filteredHospitals.length > 0 ? (
+                filteredHospitals.map((hospital) => (
+                  <Card key={hospital.id} className="border border-border">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Hospital className="w-5 h-5 text-primary" />
+                            <h3 className="font-semibold">{hospital.name}</h3>
+                            <Badge variant="outline">⭐ {hospital.rating}</Badge>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Phone className="w-3 h-3" />
-                            <span>{hospital.phone}</span>
+                          <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
+                            <div className="flex items-center space-x-1">
+                              <MapPin className="w-3 h-3" />
+                              <span>{hospital.city} • {hospital.distance}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Phone className="w-3 h-3" />
+                              <span>{hospital.phone}</span>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <span className="text-sm font-medium">Available:</span>
+                            {hospital.availableBlood.map((blood: string) => (
+                              <Badge key={blood} variant="outline" className="text-xs">
+                                {blood}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="text-sm font-medium">Available:</span>
-                          {hospital.availableBlood.map((blood) => (
-                            <Badge key={blood} variant="outline" className="text-xs">
-                              {blood}
-                            </Badge>
-                          ))}
+                        <div className="flex flex-col space-y-2">
+                          <Button size="sm">Contact</Button>
+                          <Button size="sm" variant="outline">View Stock</Button>
                         </div>
                       </div>
-                      <div className="flex flex-col space-y-2">
-                        <Button size="sm">Contact</Button>
-                        <Button size="sm" variant="outline">View Stock</Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <Hospital className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No hospitals found. Hospital admins can add their facilities.</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
